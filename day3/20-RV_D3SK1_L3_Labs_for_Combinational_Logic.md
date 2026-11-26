@@ -52,8 +52,17 @@ Inputs that are not assigned (for example `$in1`, `$in2`) get **random values** 
    $out[4:0] = $in1[3:0] + $in2[3:0];
 ```
 
-<!-- Vectors screenshot: save as day3/images/lec20_vectors.png and remove the comment markers -->
-<!-- ![Vectors](images/lec20_vectors.png) -->
+`$out[4:0]` creates a 5-bit vector; `+` treats the vectors as binary numbers. Values in the waveform are in hex:
+
+| in1 | in2 | out | Check (decimal) |
+|---|---|---|---|
+| d | c | 19 | 13 + 12 = 25 |
+| 2 | d | 0f | 2 + 13 = 15 |
+| b | c | 17 | 11 + 12 = 23 |
+| d | d | 1a | 13 + 13 = 26 |
+| c | a | 16 | 12 + 10 = 22 |
+
+![Vectors lab in Makerchip](images/lec20_vectors.png)
 
 ## Lab 3: Mux
 
@@ -79,6 +88,7 @@ Inputs that are not assigned (for example `$in1`, `$in2`) get **random values** 
 
 - In TL-Verilog, signals start with `$` and need no declaration; Makerchip randomizes undriven inputs, so no testbench is needed.
 - AND: the output is high only when both inputs are high. XOR: the output is high when the inputs differ.
+- Vectors: two 4-bit inputs (max 15 each) can add up to 30, which needs **5 bits**, so `$out` is declared `[4:0]` to avoid overflow. Every sum in the waveform is correct.
 - SandPiper turns one TL-Verilog line into a Verilog `assign` statement; the Code Comparison chart shows the TLV source is much shorter than the generated SV.
 
 ---
