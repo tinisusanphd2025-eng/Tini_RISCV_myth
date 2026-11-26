@@ -11,7 +11,7 @@ Prints the max/min values of 64-bit signed and unsigned types on the RISC-V targ
 
 - Use `%llu` for unsigned long long and `%lld` for signed long long.
 - Shifting `1` by 63/64 must be done on a 64-bit constant (`1ULL`) to avoid overflow surprises.
-- Observe the wrap-around when a value exceeds the representable range.
+- Values beyond the 64-bit range saturate at the max/min when converted from `pow()` (a double).
 
 ## Code / Commands
 
@@ -28,6 +28,28 @@ int main() {
 }
 ```
 
+### Compile and run
+
+```bash
+mkdir -p ~/riscv_labs && cd ~/riscv_labs
+leafpad signed_unsigned.c &          # write the program, save, close
+riscv64-unknown-elf-gcc -Ofast -mabi=lp64 -march=rv64i -o signed_unsigned.o signed_unsigned.c -lm
+spike pk signed_unsigned.o
+```
+
+## Output
+
+```text
+bbl loader
+umax=18446744073709551615 smax=9223372036854775807 smin=-9223372036854775808
+```
+
+| Variable | Value | Formula |
+|---|---|---|
+| `umax` | 18446744073709551615 | 2^64 − 1 (largest unsigned 64-bit) |
+| `smax` | 9223372036854775807 | 2^63 − 1 (largest signed 64-bit) |
+| `smin` | −9223372036854775808 | −2^63 (smallest signed 64-bit) |
+
 ## Screenshots
 
 <!-- Save your screenshot as day1/images/lec08_screenshot.png and remove the comment markers: -->
@@ -35,7 +57,10 @@ int main() {
 
 ## My Observations
 
-- _Add what you observed when doing this lecture/lab._
+- The program compiled with `riscv64-unknown-elf-gcc` (`-Ofast`, `rv64i`, `lp64`) and ran on Spike with the proxy kernel (`bbl loader` is Spike's boot loader).
+- Unsigned 64-bit numbers range from 0 to 2^64 − 1; signed numbers (two's complement) range from −2^63 to 2^63 − 1.
+- The signed maximum is half the unsigned maximum because the MSB is used as the sign bit.
+- `-lm` links the math library needed for `pow()`.
 
 ---
 
