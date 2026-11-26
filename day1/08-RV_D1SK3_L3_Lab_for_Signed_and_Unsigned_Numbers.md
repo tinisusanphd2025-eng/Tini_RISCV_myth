@@ -52,8 +52,9 @@ umax=18446744073709551615 smax=9223372036854775807 smin=-9223372036854775808
 
 ## Screenshots
 
-<!-- Save your screenshot as day1/images/lec08_screenshot.png and remove the comment markers: -->
-<!-- ![Lab for Signed and Unsigned Numbers](images/lec08_screenshot.png) -->
+Program in Leafpad, RISC-V GCC compilation and Spike output:
+
+![Signed and unsigned numbers – code and Spike output](images/lec08_screenshot.png)
 
 ## My Observations
 
