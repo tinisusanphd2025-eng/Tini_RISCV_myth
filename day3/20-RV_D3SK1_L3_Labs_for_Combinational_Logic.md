@@ -108,6 +108,17 @@ The bit ranges on `$in1` and `$in2` must be written explicitly, because nothing 
                  ($op[1:0] == 2'b10) ? $prod : $quot;
 ```
 
+`$op` selects the operation: `00` sum, `01` diff, `10` prod, `11` quot. Checking cycles from the waveform (hex):
+
+| val1 | val2 | op | sum | diff | prod | quot | out | Selected |
+|---|---|---|---|---|---|---|---|---|
+| 9 | 1 | 0 | a | 8 | 9 | 9 | a | sum (9 + 1) |
+| d | f | 0 | 1c | ffff_fffe | c3 | 0 | 1c | sum (13 + 15 = 28) |
+| 2 | d | 1 | f | ffff_fff5 | 1a | 0 | ffff_fff5 | diff (2 − 13 = −11) |
+| 2 | 5 | 2 | 7 | ffff_fffd | a | 0 | a | prod (2 × 5 = 10) |
+
+![Combinational calculator in Makerchip](images/lec20_calculator.png)
+
 ## My Observations
 
 - In TL-Verilog, signals start with `$` and need no declaration; Makerchip randomizes undriven inputs, so no testbench is needed.
@@ -115,6 +126,7 @@ The bit ranges on `$in1` and `$in2` must be written explicitly, because nothing 
 - Vectors: two 4-bit inputs (max 15 each) can add up to 30, which needs **5 bits**, so `$out` is declared `[4:0]` to avoid overflow. Every sum in the waveform is correct.
 - Mux: when `sel = 1` the output follows `in1`, when `sel = 0` it follows `in2`, for both the 1-bit and the 8-bit version.
 - TL-Verilog needs exactly 3-space indentation; an extra-indented line stops compilation (all tabs show a red ✗).
+- Calculator: `out` always matches the operation chosen by `op`. Negative differences appear in two's complement (e.g. 2 − 13 = `ffff_fff5`), and integer division drops the fraction (2 / 13 = 0).
 - SandPiper turns one TL-Verilog line into a Verilog `assign` statement; the Code Comparison chart shows the TLV source is much shorter than the generated SV.
 
 ---
