@@ -42,13 +42,15 @@ Reading the waveform (hex → decimal) after reset goes low:
    $cnt[31:0] = *reset ? 0 : >>1$cnt + 1;
 ```
 
-<!-- Counter screenshot: save as day3/images/lec21_counter.png and remove the comment markers -->
-<!-- ![Counter in Makerchip](images/lec21_counter.png) -->
+The counter is 0 while reset is high, then increments by 1 every clock cycle: 0, 1, 2, … 9, a, b … (hex).
+
+![Counter in Makerchip](images/lec21_counter.png)
 
 ## My Observations
 
 - While reset is high, `$num` stays at 1; once reset goes low, every new value is the sum of the last two: 1, 1, 2, 3, 5, 8, 13, 21, 34, 55 …
 - The whole sequential circuit is a single TL-Verilog expression: `>>1` and `>>2` replace explicit flip-flop code.
+- Counter: `>>1$cnt + 1` adds one to last cycle's value, so `$cnt` counts the clock cycles since reset (0000 → 001 → 002 … → 00b in the waveform).
 - `$num` is 16 bits, so it can hold values up to 65535; after about 24 terms the sum overflows and wraps around.
 
 ---
