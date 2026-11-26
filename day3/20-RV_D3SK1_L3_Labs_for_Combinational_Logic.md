@@ -66,9 +66,33 @@ Inputs that are not assigned (for example `$in1`, `$in2`) get **random values** 
 
 ## Lab 3: Mux
 
+The ternary operator `condition ? value_if_1 : value_if_0` creates a 2:1 multiplexer: `$sel` picks which input goes to `$out`.
+
+### Step 1: 1-bit mux
+
 ```tlv
-   $out[7:0] = $sel ? $in1[7:0] : $in0[7:0];
+   $out = $sel ? $in1 : $in2;
 ```
+
+![1-bit mux in Makerchip](images/lec20_mux_1bit.png)
+
+### Step 2: 8-bit vector mux
+
+```tlv
+   $out[7:0] = $sel ? $in1[7:0] : $in2[7:0];
+```
+
+The bit ranges on `$in1` and `$in2` must be written explicitly, because nothing assigns these signals, so Makerchip cannot infer their width.
+
+| sel | in1 | in2 | out | Selected |
+|---|---|---|---|---|
+| 1 | 32 | 4a | 32 | in1 |
+| 0 | cb | 5c | 5c | in2 |
+| 1 | 6c | 38 | 6c | in1 |
+| 0 | ae | ee | ee | in2 |
+| 1 | 03 | fa | 03 | in1 |
+
+![8-bit vector mux in Makerchip](images/lec20_mux_vector.png)
 
 ## Lab 4: Combinational Calculator
 
@@ -89,6 +113,8 @@ Inputs that are not assigned (for example `$in1`, `$in2`) get **random values** 
 - In TL-Verilog, signals start with `$` and need no declaration; Makerchip randomizes undriven inputs, so no testbench is needed.
 - AND: the output is high only when both inputs are high. XOR: the output is high when the inputs differ.
 - Vectors: two 4-bit inputs (max 15 each) can add up to 30, which needs **5 bits**, so `$out` is declared `[4:0]` to avoid overflow. Every sum in the waveform is correct.
+- Mux: when `sel = 1` the output follows `in1`, when `sel = 0` it follows `in2`, for both the 1-bit and the 8-bit version.
+- TL-Verilog needs exactly 3-space indentation; an extra-indented line stops compilation (all tabs show a red ✗).
 - SandPiper turns one TL-Verilog line into a Verilog `assign` statement; the Code Comparison chart shows the TLV source is much shorter than the generated SV.
 
 ---
