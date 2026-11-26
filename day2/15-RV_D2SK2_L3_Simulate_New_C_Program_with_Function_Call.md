@@ -63,7 +63,7 @@ riscv64-unknown-elf-objdump -d 1to9_custom.o | less    # type /load to find the 
 
 ## Output
 
-Expected Spike output:
+Spike output (from my run):
 
 ```text
 bbl loader
@@ -72,21 +72,25 @@ Sum of number from 1 to 9 is 45
 
 ## Screenshots
 
+### Code, compilation and Spike output
+
+Both source files shown with `cat`, compiled together with RISC-V GCC and run on Spike, which prints the sum 45:
+
+![Code, compile and Spike output](images/lec15_spike.png)
+
 ### Disassembly (objdump)
 
 `main` calls `load` with `jal ra,101bc <load>`, then moves the result into `a2` (`mv a2,a0`), loads `a1 = 9` (count) and calls `printf`:
 
 ![objdump of 1to9_custom.o](images/lec15_objdump.png)
 
-<!-- Spike output screenshot: save as day2/images/lec15_spike.png and remove the comment markers -->
-<!-- ![Spike output](images/lec15_spike.png) -->
 
 ## My Observations
 
 - The C function and the assembly function link into one executable, because both follow the RISC-V ABI.
 - In the disassembly, `main` reaches the assembly code with a single `jal ra,<load>`; `ra` holds the return address so `ret` comes back to `main`.
 - The return value comes back in `a0`, and `main` moves it to `a2` as the third `printf` argument (`a0` = format string, `a1` = count, `a2` = result).
-- The loop adds 0 + 1 + … + 9 = 45, the same answer as the pure-C version on Day 1.
+- Spike printed `Sum of number from 1 to 9 is 45`: the loop adds 0 + 1 + … + 9 = 45, the same answer as the pure-C version on Day 1.
 
 ---
 
