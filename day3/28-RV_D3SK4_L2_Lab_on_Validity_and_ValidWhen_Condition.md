@@ -36,7 +36,7 @@ The Pythagoras pipeline (cc = √(aa² + bb²)) is built over three stages, and 
 
 ![Pythagoras pipeline in Makerchip](images/lec28_pythagoras_pipeline.png)
 
-Example from the waveform (one transaction, hex): `aa` = 3, `bb` = 4 → `aa_sq` = 09, `bb_sq` = 10, `cc_sq` = 19 (= 25), `cc` = 05. The waveform lines each transaction up across `@1`, `@2` and `@3`, so the values of one transaction appear in the same column.
+Example from the waveform (one transaction, hex): `aa` = 3, `bb` = 4 → `aa_sq` = 09, `bb_sq` = 10, `cc_sq` = 19 (= 25), `cc` = 05.
 
 ## Step 2: Add Validity
 
@@ -55,13 +55,24 @@ Example from the waveform (one transaction, hex): `aa` = 3, `bb` = 4 → `aa_sq`
 
 `?$valid` means "when valid": everything inside is only meaningful in cycles where `$valid` = 1. Since `$valid` has no source, Makerchip makes it random, like transactions arriving at random times. In invalid cycles the signals are shown grey (don't care).
 
-<!-- Validity screenshot: save as day3/images/lec28_validity.png and remove the comment markers -->
-<!-- ![Pythagoras pipeline with ?$valid](images/lec28_validity.png) -->
+![Pythagoras pipeline with ?$valid](images/lec28_validity.png)
+
+Reading the waveform:
+
+- `@1$valid` is 0 for the first cycles and then goes to 1.
+- While `valid` = 0, `aa_sq`, `bb_sq`, `cc_sq` and `cc` are shown **grey**: Makerchip marks them as don't-care because no valid transaction is in the pipeline. (Red values at the very start are from before reset.)
+- Once `valid` = 1, the values are shown normally and flow through the stages:
+
+| aa | bb | aa_sq (@1) | bb_sq (@1) | cc_sq (@2) | cc (@3) |
+|---|---|---|---|---|---|
+| 4 | 3 | 10 (16) | 09 (9) | 19 (25) | 05 |
+| 9 | 3 | 51 (81) | 09 (9) | 5a (90) | 09 (√90 ≈ 9.5, integer result) |
 
 ## My Observations
 
 - The pipeline computes cc = √(aa² + bb²) correctly: 3, 4 → 5.
 - Splitting the work into three stages (square, add, square root) only needed `@1`, `@2`, `@3`; no flip-flop code was written by hand.
+- With `?$valid`, invalid cycles are greyed out in the waveform, so only real transactions need to be checked.
 - `?$valid` adds validity without changing the computation itself: it only marks which cycles carry real transactions, which makes debugging easier and allows clock gating to save power.
 
 ---
