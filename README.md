@@ -144,6 +144,12 @@ Day-wise notes, lab write-ups and screenshots from the **RISC-V based MYTH** (Mi
 
 ---
 
+## Project: GEMM on RVMYTH
+
+- [GEMM project guide, C program, converter and test program](project/gemm/README.md)
+
+---
+
 ## MakerChip Link, Files and Screenshots
 
 - **Makerchip project:** _paste your shared Makerchip URL here_

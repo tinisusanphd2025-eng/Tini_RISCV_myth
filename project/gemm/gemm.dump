@@ -1,0 +1,57 @@
+       0:      	addi	a1, zero, 0x0
+       4:      	addi	a0, zero, 0x1
+       8:      	sw	a0, 0x0(zero)
+       c:      	addi	a0, zero, 0x2
+      10:      	sw	a0, 0x4(zero)
+      14:      	addi	a0, zero, 0x3
+      18:      	sw	a0, 0x8(zero)
+      1c:      	addi	a0, zero, 0x4
+      20:      	sw	a0, 0xc(zero)
+      24:      	addi	a0, zero, 0x5
+      28:      	sw	a0, 0x10(zero)
+      2c:      	addi	a0, zero, 0x6
+      30:      	sw	a0, 0x14(zero)
+      34:      	addi	a0, zero, 0x7
+      38:      	sw	a0, 0x18(zero)
+      3c:      	addi	a0, zero, 0x8
+      40:      	sw	a0, 0x1c(zero)
+      44:      	jal	zero, 0x50 <_start+0x50>
+      48:      	addi	a1, a0, 0x1
+      4c:      	bne	a0, zero, 0xe0 <_start+0xe0>
+      50:      	addi	a5, zero, 0x0
+      54:      	addi	a0, a1, 0x0
+      58:      	slli	a1, a1, 0x3
+      5c:      	addi	a2, a1, 0x20
+      60:      	jal	zero, 0x74 <_start+0x74>
+      64:      	add	a5, a2, a5
+      68:      	sw	a4, 0x0(a5)
+      6c:      	addi	a5, a3, 0x1
+      70:      	bne	a3, zero, 0x48 <_start+0x48>
+      74:      	addi	t0, zero, 0x0
+      78:      	addi	a4, zero, 0x0
+      7c:      	addi	a3, a5, 0x0
+      80:      	slli	a5, a5, 0x2
+      84:      	addi	a6, a5, 0x10
+      88:      	jal	zero, 0x9c <_start+0x9c>
+      8c:      	addi	t2, zero, 0x0
+      90:      	add	a4, t2, a4
+      94:      	addi	t0, a7, 0x1
+      98:      	bne	a7, zero, 0x64 <_start+0x64>
+      9c:      	addi	a7, t0, 0x0
+      a0:      	slli	t0, t0, 0x2
+      a4:      	add	t0, a1, t0
+      a8:      	lw	t0, 0x0(t0)
+      ac:      	slli	t1, a7, 0x3
+      b0:      	add	t1, a6, t1
+      b4:      	lw	t1, 0x0(t1)
+      b8:      	beq	t1, zero, 0x8c <_start+0x8c>
+      bc:      	addi	t2, zero, 0x0
+      c0:      	slli	t3, t1, 0x1f
+      c4:      	srai	t3, t3, 0x1f
+      c8:      	and	t3, t3, t0
+      cc:      	add	t2, t3, t2
+      d0:      	srai	t1, t1, 0x1
+      d4:      	slli	t0, t0, 0x1
+      d8:      	bne	t1, zero, 0xc0 <_start+0xc0>
+      dc:      	jal	zero, 0x90 <_start+0x90>
+      e0:      	jal	zero, 0xe0 <_start+0xe0>

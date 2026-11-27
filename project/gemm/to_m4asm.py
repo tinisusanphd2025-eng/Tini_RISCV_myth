@@ -1,0 +1,121 @@
+#!/usr/bin/env python3
+"""Convert llvm-objdump / riscv objdump output (-M no-aliases) of an RV32I
+program into RVMYTH m4_asm(...) lines, and simulate it to count instructions,
+taken branches, jumps and loads.
+
+Usage:  python3 to_m4asm.py gemm.dump > gemm_program.tlv
+"""
+import re, sys
+
+ABI = {'zero':0,'ra':1,'sp':2,'gp':3,'tp':4,'t0':5,'t1':6,'t2':7,'s0':8,'fp':8,'s1':9,
+       'a0':10,'a1':11,'a2':12,'a3':13,'a4':14,'a5':15,'a6':16,'a7':17,
+       's2':18,'s3':19,'s4':20,'s5':21,'s6':22,'s7':23,'s8':24,'s9':25,'s10':26,'s11':27,
+       't3':28,'t4':29,'t5':30,'t6':31}
+
+def reg(r):
+    r = r.strip()
+    if r in ABI: return ABI[r]
+    if r.startswith('x'): return int(r[1:])
+    raise ValueError(r)
+
+def num(s): return int(s, 0)
+
+def binstr(v, bits):
+    return format(v & ((1 << bits) - 1), '0%db' % bits)
+
+LINE = re.compile(r'^\s*([0-9a-f]+):\s+(\S+)\s*(.*?)\s*(<.*>)?$')
+
+def parse(path):
+    prog = []
+    for line in open(path):
+        m = LINE.match(line)
+        if not m: continue
+        addr, mn, ops = int(m.group(1), 16), m.group(2).upper(), m.group(3)
+        ops = [o.strip() for o in ops.split(',')] if ops else []
+        prog.append((addr, mn, ops))
+    return prog
+
+R_OPS = {'ADD','SUB','SLL','SLT','SLTU','XOR','SRL','SRA','OR','AND'}
+I_OPS = {'ADDI','SLTI','SLTIU','XORI','ORI','ANDI'}
+SH_OPS = {'SLLI','SRLI','SRAI'}
+B_OPS = {'BEQ','BNE','BLT','BGE','BLTU','BGEU'}
+L_OPS = {'LB','LH','LW','LBU','LHU'}
+S_OPS = {'SB','SH','SW'}
+
+def mem_op(s):            # "0x4(a5)" -> (imm, reg)
+    m = re.match(r'(-?\w+)\((\w+)\)', s)
+    return num(m.group(1)), reg(m.group(2))
+
+def to_m4(addr, mn, ops):
+    if mn in R_OPS:
+        rd, rs1, rs2 = map(reg, ops); return f"m4_asm({mn}, r{rd}, r{rs1}, r{rs2})"
+    if mn in I_OPS:
+        rd, rs1 = reg(ops[0]), reg(ops[1]); return f"m4_asm({mn}, r{rd}, r{rs1}, {binstr(num(ops[2]),12)})"
+    if mn in SH_OPS:
+        rd, rs1 = reg(ops[0]), reg(ops[1]); return f"m4_asm({mn}, r{rd}, r{rs1}, {binstr(num(ops[2]),5)})"
+    if mn in L_OPS:
+        rd = reg(ops[0]); imm, rs1 = mem_op(ops[1]); return f"m4_asm({mn}, r{rd}, r{rs1}, {binstr(imm,12)})"
+    if mn in S_OPS:
+        rs2 = reg(ops[0]); imm, rs1 = mem_op(ops[1]); return f"m4_asm({mn}, r{rs1}, r{rs2}, {binstr(imm,12)})"
+    if mn in B_OPS:
+        rs1, rs2 = reg(ops[0]), reg(ops[1]); off = num(ops[2]) - addr
+        return f"m4_asm({mn}, r{rs1}, r{rs2}, {binstr(off,13)})"
+    if mn == 'JAL':
+        rd = reg(ops[0]); off = num(ops[1]) - addr
+        return f"m4_asm(JAL, r{rd}, {binstr(off >> 1, 20)})"
+    if mn == 'JALR':
+        rd = reg(ops[0]); imm, rs1 = mem_op(ops[1]); return f"m4_asm(JALR, r{rd}, r{rs1}, {binstr(imm,12)})"
+    if mn == 'LUI':
+        return f"m4_asm(LUI, r{reg(ops[0])}, {binstr(num(ops[1]),20)})"
+    if mn == 'AUIPC':
+        return f"m4_asm(AUIPC, r{reg(ops[0])}, {binstr(num(ops[1]),20)})"
+    raise ValueError(f"unsupported instruction {mn} at {addr:#x}")
+
+def s32(v): v &= 0xffffffff; return v - (1 << 32) if v & 0x80000000 else v
+
+def simulate(prog, max_steps=100000):
+    by_addr = {a: (mn, ops) for a, mn, ops in prog}
+    x = [0]*32; mem = {}; pc = 0
+    st = dict(instrs=0, taken_br=0, not_taken_br=0, jumps=0, loads=0, stores=0)
+    end = prog[-1][0]
+    while st['instrs'] < max_steps:
+        mn, ops = by_addr[pc]
+        if pc == end and mn == 'JAL': break          # final self-loop = program done
+        st['instrs'] += 1; nxt = pc + 4
+        if mn in R_OPS:
+            a, b = x[reg(ops[1])], x[reg(ops[2])]
+            r = {'ADD':a+b,'SUB':a-b,'AND':a&b,'OR':a|b,'XOR':a^b,'SLL':a<<(b&31),
+                 'SRL':(a&0xffffffff)>>(b&31),'SRA':s32(a)>>(b&31),
+                 'SLT':int(s32(a)<s32(b)),'SLTU':int((a&0xffffffff)<(b&0xffffffff))}[mn]
+            x[reg(ops[0])] = s32(r)
+        elif mn in I_OPS or mn in SH_OPS:
+            a, i = x[reg(ops[1])], num(ops[2])
+            r = {'ADDI':a+i,'ANDI':a&i,'ORI':a|i,'XORI':a^i,'SLTI':int(s32(a)<i),
+                 'SLTIU':int((a&0xffffffff)<(i&0xffffffff)),'SLLI':a<<i,
+                 'SRLI':(a&0xffffffff)>>i,'SRAI':s32(a)>>i}[mn]
+            x[reg(ops[0])] = s32(r)
+        elif mn in L_OPS:
+            imm, rs1 = mem_op(ops[1]); x[reg(ops[0])] = mem.get(x[rs1]+imm, 0); st['loads'] += 1
+        elif mn in S_OPS:
+            imm, rs1 = mem_op(ops[1]); mem[x[rs1]+imm] = x[reg(ops[0])]; st['stores'] += 1
+        elif mn in B_OPS:
+            a, b = x[reg(ops[0])], x[reg(ops[1])]
+            t = {'BEQ':a==b,'BNE':a!=b,'BLT':s32(a)<s32(b),'BGE':s32(a)>=s32(b),
+                 'BLTU':(a&0xffffffff)<(b&0xffffffff),'BGEU':(a&0xffffffff)>=(b&0xffffffff)}[mn]
+            if t: nxt = num(ops[2]); st['taken_br'] += 1
+            else: st['not_taken_br'] += 1
+        elif mn == 'JAL':
+            x[reg(ops[0])] = pc + 4; nxt = num(ops[1]); st['jumps'] += 1
+        else:
+            raise ValueError(mn)
+        x[0] = 0; pc = nxt
+    return st, mem
+
+if __name__ == '__main__':
+    prog = parse(sys.argv[1])
+    print("   // ---- Program generated by to_m4asm.py from", sys.argv[1], "----")
+    for a, mn, ops in prog:
+        print(f"   {to_m4(a, mn, ops):<45}// {a:#06x}: {mn.lower()} {', '.join(ops)}")
+    st, mem = simulate(prog)
+    C = [mem.get(0x20 + 4*i) for i in range(4)]
+    sys.stderr.write(f"Result C = {C}\nStats: {st}\n")
