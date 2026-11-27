@@ -1,4 +1,4 @@
-# RV_D4SK2_L6 – Lab to Decode Individual Instructions
+# RV_D4SK2_L7 – Lab to Decode Individual Instructions
 
 **Day 4 · Basic RISC-V CPU Micro-architecture**  
 **Sub-kit D4SK2: Fetch and Decode**

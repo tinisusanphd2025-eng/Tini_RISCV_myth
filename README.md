@@ -103,7 +103,8 @@ Day-wise notes, lab write-ups and screenshots from the **RISC-V based MYTH** (Mi
 - [L3 – Lab for RISC-V Instruction Types IRSBJU Decode Logic](day4/39-RV_D4SK2_L3_Lab_for_RISCV_Instruction_Types_IRSBJU_Decode_Logic.md)
 - [L4 – Lab for Instruction Immediate Decode Logic](day4/40-RV_D4SK2_L4_Lab_for_Instruction_Immediate_Decode_Logic.md)
 - [L5 – Lab to Decode Other Fields of Instructions](day4/41-RV_D4SK2_L5_Lab_to_Decode_Other_Fields_of_Instructions.md)
-- [L6 – Lab to Decode Individual Instructions](day4/42-RV_D4SK2_L6_Lab_to_Decode_Individual_Instructions.md)
+- [L6 – RISC-V Instruction Field Decode with When Conditions](day4/42-RV_D4SK2_L6_Field_Decode_with_When_Conditions.md)
+- [L7 – Lab to Decode Individual Instructions](day4/42b-RV_D4SK2_L7_Lab_to_Decode_Individual_Instructions.md)
 
 ### D4SK3: RISC-V Control Logic
 
