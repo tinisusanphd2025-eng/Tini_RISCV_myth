@@ -10,6 +10,8 @@ Goal: run a matrix multiply (GEMM) written in C on the RVMYTH CPU built in the w
 | [`gemm.dump`](gemm.dump) | Disassembly of the compiled program (57 RV32I instructions) |
 | [`to_m4asm.py`](to_m4asm.py) | Converts the disassembly into RVMYTH `m4_asm(...)` lines and simulates it |
 | [`gemm_program.tlv`](gemm_program.tlv) | Generated test program to paste into the RVMYTH shell |
+| [`gemm_pipelined.tlv`](gemm_pipelined.tlv) | **Complete Makerchip file:** pipelined RVMYTH CPU + GEMM program + counters |
+| [`gemm_3cycle.tlv`](gemm_3cycle.tlv) | **Complete Makerchip file:** non-pipelined (3-cycle) RVMYTH CPU + GEMM program + counters |
 
 ## Step 1 – Write GEMM in C for a bare RV32I CPU
 
